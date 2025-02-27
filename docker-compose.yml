@@ -1,0 +1,6 @@
+services:
+  api.web:
+    image: ${DOCKER_REGISTRY-}apiweb
+    build:
+      context: .
+      dockerfile: Api.Web/Dockerfile

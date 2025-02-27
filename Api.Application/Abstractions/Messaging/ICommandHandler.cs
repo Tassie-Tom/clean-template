@@ -1,0 +1,16 @@
+﻿using Api.SharedKernal;
+using MediatR;
+
+namespace Api.Application.Abstractions.Messaging;
+
+public interface ICommandHandler<in TCommand>
+    : IRequestHandler<TCommand, Result>
+    where TCommand : ICommand
+{
+}
+
+public interface ICommandHandler<in TCommand, TResponse>
+    : IRequestHandler<TCommand, Result<TResponse>>
+    where TCommand : ICommand<TResponse>
+{
+}
