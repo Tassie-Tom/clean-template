@@ -24,4 +24,9 @@
 	  <ProjectReference Include="..\Api.Application\Api.Application.csproj" />
 	</ItemGroup>
 
+
+	<ItemGroup>
+	  <Folder Include="Azure\" />
+	</ItemGroup>
+
 </Project>

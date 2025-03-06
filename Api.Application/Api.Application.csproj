@@ -21,12 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Api.Domain\Api.Domain.csproj" />
-    <ProjectReference Include="..\Api.SharedKernal\Api.SharedKernal.csproj" />
+    <Folder Include="Users\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Users\" />
+    <ProjectReference Include="..\Api.Domain\Api.Domain.csproj" />
+    <ProjectReference Include="..\Api.SharedKernal\Api.SharedKernal.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,21 @@
+using Api.Application;
+using Api.Infrastructure;
+using Api.Web.Extenstions;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Host.UseSerilog((context, loggerConfig) =>
+    loggerConfig.ReadFrom.Configuration(context.Configuration));
+
+builder.Services
+    .AddApplication()
+    .AddPresentation()
+    .AddInfrastructure(builder.Configuration);
 
 // Add services to the container.
 
@@ -18,8 +35,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapHealthChecks("health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.UseRequestContextLogging();
+
+app.UseSerilogRequestLogging();
+
+app.UseExceptionHandler();
+
+app.UseAuthentication();
+
 app.UseAuthorization();
 
+
+// REMARK: If you want to use Controllers, you'll need this.
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
+
+// REMARK: Required for functional and integration tests to work.
+public partial class Program;
+
