@@ -1,5 +1,5 @@
 ﻿using Api.Application.Abstractions.Caching;
-using Api.SharedKernal;
+using Api.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

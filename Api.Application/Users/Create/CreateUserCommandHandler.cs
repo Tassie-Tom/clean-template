@@ -1,7 +1,7 @@
 ﻿using Api.Application.Abstractions.Data;
 using Api.Application.Abstractions.Messaging;
 using Api.Domain.Users;
-using Api.SharedKernal;
+using Api.SharedKernel;
 
 namespace Api.Application.Users.Create;
 

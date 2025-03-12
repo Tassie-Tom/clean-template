@@ -1,5 +1,5 @@
-﻿using Api.SharedKernal;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+using Api.SharedKernel;
 
 namespace Api.Domain.Users;
 

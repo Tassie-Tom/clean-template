@@ -1,9 +1,9 @@
 ﻿using Api.Application.Abstractions.Data;
 using Api.Application.Abstractions.Messaging;
 using Api.Domain.Users;
-using Api.SharedKernal;
 using Dapper;
 using System.Data;
+using Api.SharedKernel;
 
 namespace Api.Application.Users.GetByEmail;
 

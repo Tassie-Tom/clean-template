@@ -1,4 +1,4 @@
-﻿using Api.SharedKernal;
+﻿using Api.SharedKernel;
 using MediatR;
 
 namespace Api.Application.Abstractions.Messaging;

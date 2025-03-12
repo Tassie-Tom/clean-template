@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Api.SharedKernal;
+namespace Api.SharedKernel;
 
 public class Result
 {

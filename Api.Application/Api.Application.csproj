@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Api.Domain\Api.Domain.csproj" />
-    <ProjectReference Include="..\Api.SharedKernal\Api.SharedKernal.csproj" />
+    <ProjectReference Include="..\Api.SharedKernal\Api.SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>

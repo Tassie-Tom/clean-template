@@ -1,4 +1,4 @@
-﻿namespace Api.SharedKernal;
+﻿namespace Api.SharedKernel;
 public abstract class Entity
 {
     private readonly List<IDomainEvent> _domainEvents = new();

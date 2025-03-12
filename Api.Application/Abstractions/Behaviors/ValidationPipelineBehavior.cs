@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Api.SharedKernal;
+using Api.SharedKernel;
 using FluentValidation;
 using FluentValidation.Results;
 using MediatR;

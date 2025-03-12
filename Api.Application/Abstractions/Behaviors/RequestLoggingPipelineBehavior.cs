@@ -1,4 +1,4 @@
-﻿using Api.SharedKernal;
+﻿using Api.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Serilog.Context;

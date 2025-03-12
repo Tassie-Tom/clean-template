@@ -1,4 +1,4 @@
-﻿using Api.SharedKernal;
+﻿using Api.SharedKernel;
 
 namespace Api.Infrastructure.Time;
 

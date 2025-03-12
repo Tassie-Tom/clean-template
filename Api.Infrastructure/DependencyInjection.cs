@@ -3,15 +3,17 @@ using Api.Application.Abstractions.Data;
 using Api.Domain.Users;
 using Api.Infrastructure;
 using Api.Infrastructure.Caching;
+using Api.Infrastructure.Configuration;
 using Api.Infrastructure.Database;
 using Api.Infrastructure.Repositories;
 using Api.Infrastructure.Time;
-using Api.SharedKernal;
+using Api.SharedKernel;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace Api.Infrastructure;
@@ -25,6 +27,7 @@ public static class DependencyInjection
             .AddServices()
             .AddDatabase(configuration)
             .AddCaching(configuration)
+            .AddSecretProvider(configuration)
             .AddHealthChecks(configuration);
 
     private static IServiceCollection AddServices(this IServiceCollection services)
@@ -38,7 +41,7 @@ public static class DependencyInjection
     {
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
-        string? connectionString = configuration.GetConnectionString("Database");
+        var connectionString = configuration.GetConnectionString("Database");
         Ensure.NotNullOrEmpty(connectionString);
 
         services.AddSingleton<IDbConnectionFactory>(_ =>
@@ -74,6 +77,30 @@ public static class DependencyInjection
             .AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("Database")!)
             .AddRedis(configuration.GetConnectionString("Cache")!);
+
+        return services;
+    }
+
+    private static IServiceCollection AddSecretProvider(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // Register options
+        services.Configure<SecretProviderOptions>(
+            configuration.GetSection(SecretProviderOptions.SectionName));
+
+        // Register the appropriate secret provider based on configuration
+        services.AddSingleton<ISecretProvider>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<SecretProviderOptions>>().Value;
+
+            if (options.UseAzureKeyVault && !string.IsNullOrEmpty(options.KeyVaultUri))
+            {
+                return new AzureKeyVaultSecretProvider(options.KeyVaultUri);
+            }
+
+            return new ConfigurationSecretProvider(sp.GetRequiredService<IConfiguration>());
+        });
 
         return services;
     }

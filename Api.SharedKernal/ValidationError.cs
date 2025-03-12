@@ -1,4 +1,4 @@
-﻿namespace Api.SharedKernal;
+﻿namespace Api.SharedKernel;
 
 public sealed record ValidationError : Error
 {

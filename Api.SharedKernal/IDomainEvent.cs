@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Api.SharedKernal;
+namespace Api.SharedKernel;
 
 public interface IDomainEvent : INotification
 {
