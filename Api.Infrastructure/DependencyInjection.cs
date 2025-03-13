@@ -25,9 +25,9 @@ public static class DependencyInjection
         IConfiguration configuration) =>
         services
             .AddServices()
+            .AddSecretProvider(configuration)
             .AddDatabase(configuration)
             .AddCaching(configuration)
-            .AddSecretProvider(configuration)
             .AddHealthChecks(configuration);
 
     private static IServiceCollection AddServices(this IServiceCollection services)
@@ -41,20 +41,41 @@ public static class DependencyInjection
     {
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
-        var connectionString = configuration.GetConnectionString("Database");
-        Ensure.NotNullOrEmpty(connectionString);
 
-        services.AddSingleton<IDbConnectionFactory>(_ =>
-            new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
+        services.Configure<DbProviderOptions>(configuration.GetSection(DbProviderOptions.SectionName));
 
-        services.AddDbContext<ApplicationDbContext>(
-            options => options
-                .UseNpgsql(connectionString, npgsqlOptions =>
-                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default))
-                .UseSnakeCaseNamingConvention());
+        var dbOptions = configuration.GetSection(DbProviderOptions.SectionName).Get<DbProviderOptions>()
+                        ?? new DbProviderOptions();
+
+
+        // Add database-specific connection factory
+        services.AddSingleton<IDbConnectionFactory>(sp =>
+        {
+            var secretProvider = sp.GetRequiredService<ISecretProvider>();
+            var dbConnString = secretProvider.GetSecretAsync("ConnectionStrings:Database").GetAwaiter().GetResult();
+
+            return dbOptions.Provider.ToLowerInvariant() switch
+            {
+                "postgres" => new PostgresConnectionFactory(dbConnString),
+                "sqlserver" => new SqlServerConnectionFactory(dbConnString),
+                "mysql" => new MySqlConnectionFactory(dbConnString),
+                _ => throw new ArgumentException($"Unsupported database provider: {dbOptions.Provider}")
+            };
+        });
+
+        // Configure DbContext
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        {
+            var secretProvider = sp.GetRequiredService<ISecretProvider>();
+            var dbConnString = secretProvider.GetSecretAsync("ConnectionStrings:Database").GetAwaiter().GetResult();
+
+            options.ConfigureProvider(
+                dbConnString,
+                dbOptions.Provider,
+                typeof(ApplicationDbContext).Assembly.GetName().Name!);
+        });
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
         services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
@@ -62,7 +83,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
     {
-        string redisConnectionString = configuration.GetConnectionString("Cache")!;
+        var redisConnectionString = configuration.GetConnectionString("Cache")!;
 
         services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
 
