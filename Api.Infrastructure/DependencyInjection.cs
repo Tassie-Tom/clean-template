@@ -2,6 +2,7 @@
 using Api.Application.Abstractions.Data;
 using Api.Domain.Users;
 using Api.Infrastructure;
+using Api.Infrastructure.Authentication;
 using Api.Infrastructure.Caching;
 using Api.Infrastructure.Configuration;
 using Api.Infrastructure.Database;
@@ -27,6 +28,7 @@ public static class DependencyInjection
             .AddServices()
             .AddSecretProvider(configuration)
             .AddDatabase(configuration)
+            .AddFirebaseAuthentication(configuration)
             .AddCaching(configuration)
             .AddHealthChecks(configuration);
 

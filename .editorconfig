@@ -36,6 +36,7 @@ dotnet_diagnostic.S6668.severity = silent
 dotnet_diagnostic.S6667.severity = silent
 dotnet_diagnostic.S6664.severity = silent
 dotnet_diagnostic.S2629.severity = silent
+dotnet_diagnostic.S1848.severity = none
 [*.{cs,vb}]
 #### Naming styles ####
 
@@ -85,3 +86,4 @@ dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_diagnostic.CA1040.severity = silent
 dotnet_diagnostic.CA2007.severity = silent
+dotnet_diagnostic.CA1848.severity = none

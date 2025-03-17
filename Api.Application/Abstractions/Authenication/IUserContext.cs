@@ -1,6 +1,6 @@
 ﻿namespace Api.Application.Abstractions.Authenication;
 
-interface IUserContext
+public interface IUserContext
 {
     Guid UserId { get; }
 

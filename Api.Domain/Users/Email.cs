@@ -12,6 +12,7 @@ public sealed record Email
     {
         if (string.IsNullOrEmpty(email))
         {
+
             return Result.Failure<Email>(EmailErrors.Empty);
         }
 
