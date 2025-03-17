@@ -2,5 +2,4 @@
 
 namespace Api.Application.Users.Create;
 
-public sealed record CreateUserCommand(string Email, string Name)
-    : ICommand<Guid>;
+public sealed record CreateUserCommand(string Email, string Name) : ICommand<Guid>;

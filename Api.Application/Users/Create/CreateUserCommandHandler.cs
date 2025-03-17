@@ -31,7 +31,10 @@ internal sealed class CreateUserCommandHandler(
 
         var firebaseUid = userContext.FirebaseId;
 
-
+        if (firebaseUid == null)
+        {
+            return Result.Failure<Guid>(UserErrors.FireBaseUserNotFound);
+        }
 
         var user = User.Create(email, name, firebaseUid);
 
