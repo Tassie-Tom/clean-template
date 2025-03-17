@@ -5,12 +5,12 @@ namespace Api.Domain.Users;
 
 public sealed class User : Entity
 {
-    private User(Guid id, Email email, Name name, bool hasPublicProfile)
+    private User(Guid id, Email email, Name name, string firebaseId)
         : base(id)
     {
         Email = email;
         Name = name;
-        HasPublicProfile = hasPublicProfile;
+        FirebaseId = firebaseId;
     }
 
     private User()
@@ -21,11 +21,11 @@ public sealed class User : Entity
 
     public Name Name { get; private set; }
 
-    public bool HasPublicProfile { get; set; }
+    public string FirebaseId { get; private set; }
 
-    public static User Create(Email email, Name name, bool hasPublicProfile)
+    public static User Create(Email email, Name name, string firebaseId)
     {
-        var user = new User(Guid.NewGuid(), email, name, hasPublicProfile);
+        var user = new User(Guid.NewGuid(), email, name, firebaseId);
 
         user.Raise(new UserCreatedDomainEvent(user.Id));
 

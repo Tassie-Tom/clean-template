@@ -1,4 +1,5 @@
-﻿using Api.Application.Abstractions.Data;
+﻿using Api.Application.Abstractions.Authenication;
+using Api.Application.Abstractions.Data;
 using Api.Application.Abstractions.Messaging;
 using Api.Domain.Users;
 using Api.SharedKernel;
@@ -7,6 +8,7 @@ namespace Api.Application.Users.Create;
 
 internal sealed class CreateUserCommandHandler(
     IUserRepository userRepository,
+    IUserContext userContext,
     IUnitOfWork unitOfWork) : ICommandHandler<CreateUserCommand, Guid>
 {
     public async Task<Result<Guid>> Handle(
@@ -26,10 +28,11 @@ internal sealed class CreateUserCommandHandler(
         }
 
         var name = new Name(command.Name);
-        var user = User.Create(email, name, command.HasPublicProfile);
+
+        var firebaseUid = userContext.FirebaseId;
+        var user = User.Create(email, name, firebaseUid);
 
         userRepository.Insert(user);
-
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return user.Id;

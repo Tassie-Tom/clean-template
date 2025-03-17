@@ -20,4 +20,9 @@ internal sealed class UserRepository(ApplicationDbContext context) : IUserReposi
     {
         context.Users.Add(user);
     }
+
+    public Task<User?> GetByFirebaseIdAsync(string firebaseId)
+    {
+        return context.Users.FirstOrDefaultAsync(u => u.FirebaseId == firebaseId);
+    }
 }
