@@ -22,7 +22,7 @@ internal sealed class CreateUserCommandHandler(
         }
 
         Email email = emailResult.Value;
-        if (!await userRepository.IsEmailUniqueAsync(email))
+        if (await userRepository.IsEmailUniqueAsync(email) is false)
         {
             return Result.Failure<Guid>(UserErrors.EmailNotUnique);
         }
@@ -30,6 +30,9 @@ internal sealed class CreateUserCommandHandler(
         var name = new Name(command.Name);
 
         var firebaseUid = userContext.FirebaseId;
+
+
+
         var user = User.Create(email, name, firebaseUid);
 
         userRepository.Insert(user);

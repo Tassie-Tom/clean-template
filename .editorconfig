@@ -37,6 +37,10 @@ dotnet_diagnostic.S6667.severity = silent
 dotnet_diagnostic.S6664.severity = silent
 dotnet_diagnostic.S2629.severity = silent
 dotnet_diagnostic.S1848.severity = none
+
+# IDE0100: Remove redundant equality
+dotnet_diagnostic.IDE0100.severity = none
+
 [*.{cs,vb}]
 #### Naming styles ####
 
