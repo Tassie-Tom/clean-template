@@ -1,5 +1,5 @@
 ﻿namespace Api.Web.Controllers.Auth;
 
-internal record CreateUserRequest(
+public record CreateUserRequest(
     string Email,
     string Name);

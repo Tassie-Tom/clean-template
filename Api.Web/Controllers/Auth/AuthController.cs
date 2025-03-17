@@ -8,10 +8,10 @@ namespace Api.Web.Controllers.Auth;
 [Authorize]
 [ApiController]
 [Route("[controller]")]
-internal class AuthController(ISender sender) : ControllerBase
+public class AuthController(ISender sender) : ControllerBase
 {
     [HttpPost("CreateUser")]
-    internal async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
         var command = new CreateUserCommand(request.Email, request.Name);
 
