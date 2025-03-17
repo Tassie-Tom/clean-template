@@ -21,7 +21,7 @@ internal sealed class UserContext : IUserContext
         _userRepository = userRepository;
     }
 
-    public Guid UserId => CurrentUser?.Id ?? Guid.Empty;
+    public Guid UserId => GetCurrentUserAsync().GetAwaiter().GetResult()?.Id ?? Guid.Empty;
 
     public string FirebaseId =>
         _httpContextAccessor.HttpContext?.User?.FindFirstValue("user_id") ?? string.Empty;
@@ -29,25 +29,22 @@ internal sealed class UserContext : IUserContext
     public bool IsAuthenticated =>
         _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
-    public User? CurrentUser
+    public async Task<User?> GetCurrentUserAsync()
     {
-        get
+        if (_userLoaded)
         {
-            if (_userLoaded)
-            {
-                return _cachedUser;
-            }
-
-            if (!IsAuthenticated || string.IsNullOrEmpty(FirebaseId))
-            {
-                _userLoaded = true;
-                return null;
-            }
-
-            _cachedUser = _userRepository.GetByFirebaseIdAsync(FirebaseId).GetAwaiter().GetResult();
-            _userLoaded = true;
-
             return _cachedUser;
         }
+
+        if (!IsAuthenticated || string.IsNullOrEmpty(FirebaseId))
+        {
+            _userLoaded = true;
+            return null;
+        }
+
+        _cachedUser = await _userRepository.GetByFirebaseIdAsync(FirebaseId);
+        _userLoaded = true;
+
+        return _cachedUser;
     }
 }
