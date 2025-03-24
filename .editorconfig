@@ -41,6 +41,9 @@ dotnet_diagnostic.S1848.severity = none
 # IDE0100: Remove redundant equality
 dotnet_diagnostic.IDE0100.severity = none
 
+# CA1515: Consider making public types internal
+dotnet_diagnostic.CA1515.severity = none
+
 [*.{cs,vb}]
 #### Naming styles ####
 

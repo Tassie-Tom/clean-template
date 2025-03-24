@@ -4,3 +4,16 @@ services:
     build:
       context: .
       dockerfile: Api.Web/Dockerfile
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341"
+      - "80:80"
+    volumes:
+      - seq-data:/data
+
+
+volumes:
+  seq-data:
