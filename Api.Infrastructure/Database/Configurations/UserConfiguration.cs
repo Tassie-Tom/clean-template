@@ -17,5 +17,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.ComplexProperty(
             u => u.Name,
             b => b.Property(e => e.Value).HasColumnName("name"));
+
+        builder.Property(u => u.FirebaseId).HasColumnName("firebase_id");
+
     }
 }

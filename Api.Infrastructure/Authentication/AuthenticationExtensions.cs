@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 
 namespace Api.Infrastructure.Authentication;
 
@@ -21,14 +20,41 @@ public static class AuthenticationExtensions
         // Initialize Firebase if not already initialized
         if (FirebaseApp.DefaultInstance == null)
         {
-            var credential = GoogleCredential.FromFile(
-                configuration["Firebase:CredentialPath"] ??
-                @"C:\Users\hello\Downloads\thegoodlotto-firebase-adminsdk-vef7k-f3a8b806c7.json");
+            GoogleCredential credential;
+
+            string firebaseCredentialJson = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS");
+
+            if (!string.IsNullOrEmpty(firebaseCredentialJson))
+            {
+                // Use credentials from environment variable
+                credential = GoogleCredential.FromJson(firebaseCredentialJson);
+            }
+            else
+            {
+                // Fall back to file if environment variable is not set
+                string credentialPath = configuration["Firebase:CredentialPath"];
+                if (string.IsNullOrEmpty(credentialPath))
+                {
+                    throw new InvalidOperationException(
+                        "Firebase credentials not found. Set FIREBASE_CREDENTIALS environment variable or Firebase:CredentialPath in configuration.");
+                }
+
+                credential = GoogleCredential.FromFile(credentialPath);
+            }
+
+            var projectId = configuration["Firebase:ProjectId"] ??
+                Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID");
+
+            if (string.IsNullOrEmpty(projectId))
+            {
+                throw new InvalidOperationException(
+                    "Firebase Project ID not found. Set FIREBASE_PROJECT_ID environment variable or Firebase:ProjectId in configuration.");
+            }
 
             FirebaseApp.Create(new AppOptions
             {
                 Credential = credential,
-                ProjectId = configuration["Firebase:ProjectId"],
+                ProjectId = projectId,
             });
         }
 
@@ -37,13 +63,16 @@ public static class AuthenticationExtensions
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                options.Authority = $"https://securetoken.google.com/{configuration["Firebase:ProjectId"]}";
+                var projectId = configuration["Firebase:ProjectId"] ??
+                    Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID");
+
+                options.Authority = $"https://securetoken.google.com/{projectId}";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = $"https://securetoken.google.com/{configuration["Firebase:ProjectId"]}",
+                    ValidIssuer = $"https://securetoken.google.com/{projectId}",
                     ValidateAudience = true,
-                    ValidAudience = configuration["Firebase:ProjectId"],
+                    ValidAudience = projectId,
                     ValidateLifetime = true
                 };
 

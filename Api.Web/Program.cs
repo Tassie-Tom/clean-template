@@ -1,9 +1,16 @@
 using Api.Application;
 using Api.Infrastructure;
 using Api.Web.Extenstions;
+using DotNetEnv;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
+
+
+if (File.Exists(".env") || File.Exists("../.env"))
+{
+    Env.Load();
+}
 
 
 var builder = WebApplication.CreateBuilder(args);

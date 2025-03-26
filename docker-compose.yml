@@ -4,16 +4,59 @@ services:
     build:
       context: .
       dockerfile: Api.Web/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - ConnectionStrings__Database=Host=postgres;Port=5432;Database=ApiDb;Username=postgres;Password=postgres;
+      - ConnectionStrings__Cache=redis:6379,abortConnect=false,ssl=false
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+    
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ApiDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   seq:
     image: datalust/seq:latest
     environment:
       - ACCEPT_EULA=Y
     ports:
       - "5341:5341"
-      - "80:80"
+      - "8880:80" 
     volumes:
       - seq-data:/data
 
-
 volumes:
+  postgres_data:
+  redis_data:
   seq-data:
