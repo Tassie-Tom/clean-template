@@ -12,9 +12,7 @@ if (File.Exists(".env") || File.Exists("../.env"))
     Env.Load();
 }
 
-
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration));
@@ -23,8 +21,6 @@ builder.Services
     .AddApplication()
     .AddPresentation()
     .AddInfrastructure(builder.Configuration);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -57,8 +53,6 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-
-// REMARK: If you want to use Controllers, you'll need this.
 app.MapControllers();
 
 await app.RunAsync();
