@@ -13,6 +13,7 @@ using Api.Infrastructure.Time;
 using Api.SharedKernel;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ using Npgsql;
 
 namespace Api.Infrastructure;
 
-public static class DependencyInjection
+public static partial class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
@@ -77,7 +78,10 @@ public static class DependencyInjection
             var secretProvider = sp.GetRequiredService<ISecretProvider>();
             var dbConnString = secretProvider.GetSecretAsync("ConnectionStrings:Database").GetAwaiter().GetResult();
 
-            options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
+            if (!DesignTimeDbContextFactory.IsDesignTime)
+            {
+                options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
+            }
 
 
             options.ConfigureProvider(
