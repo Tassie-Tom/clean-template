@@ -7,6 +7,7 @@ using Api.Infrastructure.BackgroundJobs;
 using Api.Infrastructure.Caching;
 using Api.Infrastructure.Configuration;
 using Api.Infrastructure.Database;
+using Api.Infrastructure.Database.Interceptors;
 using Api.Infrastructure.Repositories;
 using Api.Infrastructure.Time;
 using Api.SharedKernel;
@@ -67,11 +68,17 @@ public static class DependencyInjection
             };
         });
 
+        services.AddScoped<AuditableEntityInterceptor>();
+
+
         // Configure DbContext
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             var secretProvider = sp.GetRequiredService<ISecretProvider>();
             var dbConnString = secretProvider.GetSecretAsync("ConnectionStrings:Database").GetAwaiter().GetResult();
+
+            options.AddInterceptors(sp.GetRequiredService<AuditableEntityInterceptor>());
+
 
             options.ConfigureProvider(
                 dbConnString,

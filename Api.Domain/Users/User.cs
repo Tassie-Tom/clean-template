@@ -3,7 +3,7 @@ using Api.SharedKernel;
 
 namespace Api.Domain.Users;
 
-public sealed class User : Entity
+public sealed class User : AuditableEntity
 {
     private User(Guid id, Email email, Name name, string firebaseId)
         : base(id)
