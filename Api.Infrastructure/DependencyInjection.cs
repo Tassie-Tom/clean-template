@@ -3,6 +3,7 @@ using Api.Application.Abstractions.Data;
 using Api.Domain.Users;
 using Api.Infrastructure;
 using Api.Infrastructure.Authentication;
+using Api.Infrastructure.BackgroundJobs;
 using Api.Infrastructure.Caching;
 using Api.Infrastructure.Configuration;
 using Api.Infrastructure.Database;
@@ -30,6 +31,7 @@ public static class DependencyInjection
             .AddDatabase(configuration)
             .AddFirebaseAuthentication(configuration)
             .AddCaching(configuration)
+            .AddHangfire(configuration) 
             .AddHealthChecks(configuration);
 
     private static IServiceCollection AddServices(this IServiceCollection services)
