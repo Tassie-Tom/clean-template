@@ -27,7 +27,6 @@ public sealed class AuditableEntityInterceptor : SaveChangesInterceptor
         string currentUser = _userContext.IsAuthenticated
                 ? _userContext.UserId.ToString()
                 : "System";
-        
         var utcNow = DateTime.UtcNow;
 
         foreach (var entry in eventData.Context.ChangeTracker.Entries<AuditableEntity>())

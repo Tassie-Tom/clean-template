@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Linq.Expressions;
 using System.Text.Json;
 using Api.Application.Abstractions.Data;
 using Api.Domain.Users;
@@ -23,6 +24,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         modelBuilder.HasDefaultSchema(Schemas.Default);
+
+        //modelBuilder.Entity<AuditableEntity>().HasQueryFilter(e => !e.IsDeleted);
+
+        ApplySoftDeleteQueryFilter(modelBuilder);
+
     }
 
     public async Task<IDbTransaction> BeginTransactionAsync()
@@ -65,5 +71,29 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             .ToList();
 
         AddRange(outboxMessages);
+    }
+
+    private static void ApplySoftDeleteQueryFilter(ModelBuilder modelBuilder)
+    {
+        // Get all types that inherit from AuditableEntity
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+            .Where(e => typeof(AuditableEntity).IsAssignableFrom(e.ClrType)))
+        {
+            // Create the method Info for the SetQueryFilter method
+            var parameter = Expression.Parameter(entityType.ClrType, "e");
+            var propertyMethodInfo = typeof(EF).GetMethod(nameof(EF.Property))
+                ?.MakeGenericMethod(typeof(bool));
+
+            var isDeletedProperty = Expression.Call(
+                propertyMethodInfo!,
+                parameter,
+                Expression.Constant("IsDeleted"));
+
+            var notDeletedExpression = Expression.Not(isDeletedProperty);
+            var lambda = Expression.Lambda(notDeletedExpression, parameter);
+
+            // Apply the filter
+            entityType.SetQueryFilter(lambda);
+        }
     }
 }
