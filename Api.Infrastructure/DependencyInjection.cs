@@ -8,10 +8,13 @@ using Api.Infrastructure.Caching;
 using Api.Infrastructure.Configuration;
 using Api.Infrastructure.Database;
 using Api.Infrastructure.Database.Interceptors;
+using Api.Infrastructure.DomainEvents;
 using Api.Infrastructure.Repositories;
 using Api.Infrastructure.Time;
 using Api.SharedKernel;
 using Dapper;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -39,6 +42,8 @@ public static partial class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+        services.AddSingleton<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<OutboxProcessor>();
 
         return services;
     }
@@ -101,7 +106,6 @@ public static partial class DependencyInjection
         var redisConnectionString = configuration.GetConnectionString("Cache")!;
 
         services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
-
         services.AddSingleton<ICacheService, CacheService>();
 
         return services;
@@ -113,6 +117,34 @@ public static partial class DependencyInjection
             .AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("Database")!)
             .AddRedis(configuration.GetConnectionString("Cache")!);
+
+        return services;
+    }
+
+    public static IServiceCollection AddHangfire(
+    this IServiceCollection services,
+    IConfiguration configuration)
+    {
+        // Register Hangfire services
+        services.AddHangfire((sp, config) =>
+        {
+            // Get the connection string using the SecretProvider
+            var secretProvider = sp.GetRequiredService<ISecretProvider>();
+            var connectionString = secretProvider.GetSecretAsync("ConnectionStrings:Database").GetAwaiter().GetResult();
+
+            config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(connectionString));
+        });
+
+        // Add the Hangfire server
+        services.AddHangfireServer(options =>
+        {
+            options.WorkerCount = 4;
+            options.Queues = new[] { "default", "outbox" };
+        });
 
         return services;
     }

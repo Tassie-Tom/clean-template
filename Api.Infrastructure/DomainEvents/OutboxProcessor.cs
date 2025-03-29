@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace Api.Infrastructure.BackgroundJobs;
+namespace Api.Infrastructure.DomainEvents;
 
 public sealed class OutboxProcessor
 {
