@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
-using System.Text.Json;
 using Api.Application.Abstractions.Data;
 using Api.Domain.Users;
 using Api.Infrastructure.Outbox;
@@ -10,25 +9,28 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Api.Infrastructure.Database;
 
-public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : DbContext(options), IUnitOfWork
+public sealed class ApplicationDbContext : DbContext, IUnitOfWork
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<OutboxMessage> OutboxMessages { get; set; }
+    private readonly IDomainEventDispatcher? _domainEventDispatcher;
 
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        IDomainEventDispatcher? domainEventDispatcher = null)
+        : base(options)
+    {
+        _domainEventDispatcher = domainEventDispatcher;
+    }
+
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<OutboxMessage> OutboxMessages { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-
         modelBuilder.HasDefaultSchema(Schemas.Default);
-
-        //modelBuilder.Entity<AuditableEntity>().HasQueryFilter(e => !e.IsDeleted);
-
         ApplySoftDeleteQueryFilter(modelBuilder);
-
     }
 
     public async Task<IDbTransaction> BeginTransactionAsync()
@@ -40,37 +42,36 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     {
         try
         {
-            AddDomainEventsAsOutboxMessages();
+            // Collect all entities with domain events before saving
+            var entitiesWithEvents = ChangeTracker.Entries<Entity>()
+                .Select(e => e.Entity)
+                .Where(e => e.DomainEvents.Count != 0)
+                .ToArray();
+
+            // Save the changes to the database
             var result = await base.SaveChangesAsync(cancellationToken);
+
+            // After successful save, dispatch domain events within the same transaction
+            if (_domainEventDispatcher != null && entitiesWithEvents.Length != 0)
+            {
+                await _domainEventDispatcher.DispatchAndClearEventsAsync(entitiesWithEvents, cancellationToken);
+            }
+            else
+            {
+                // If no dispatcher is available, just clear the events
+                foreach (var entity in entitiesWithEvents)
+                {
+                    entity.ClearDomainEvents();
+                }
+            }
+
             return result;
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            // todo 
-            throw new Exception("Concurrency exception", ex);
-            //throw new ConcurrencyException();
+            // This should be handled with a proper concurrency exception
+            throw new Exception("Concurrency exception occurred", ex);
         }
- 
-    }
-
-    public void AddDomainEventsAsOutboxMessages()
-    {
-        // Collect domain events from tracked entities
-        var outboxMessages = ChangeTracker.Entries<Entity>().Select(entry => entry.Entity)
-            .SelectMany(entity =>
-            {
-                var domainEvents = entity.DomainEvents;
-                entity.ClearDomainEvents();
-                return domainEvents;
-            })
-            .Select(domainEvent => new OutboxMessage(
-                    Guid.NewGuid(),
-                    DateTime.UtcNow,
-                    domainEvent.GetType().Name,
-                    JsonSerializer.Serialize(domainEvent)))
-            .ToList();
-
-        AddRange(outboxMessages);
     }
 
     private static void ApplySoftDeleteQueryFilter(ModelBuilder modelBuilder)
