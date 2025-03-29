@@ -6,6 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Azure\**" />
+    <EmbeddedResource Remove="Azure\**" />
+    <None Remove="Azure\**" />
+  </ItemGroup>
+
 
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
@@ -38,11 +44,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Api.Application\Api.Application.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <Folder Include="Azure\" />
 	</ItemGroup>
 
 </Project>
