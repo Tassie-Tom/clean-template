@@ -1,6 +1,6 @@
 using Api.Application;
 using Api.Infrastructure;
-using Api.Infrastructure.BackgroundJobs;
+using Api.Infrastructure.DomainEvents;
 using Api.Web.Extenstions;
 using DotNetEnv;
 using Hangfire;

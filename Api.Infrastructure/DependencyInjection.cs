@@ -3,7 +3,6 @@ using Api.Application.Abstractions.Data;
 using Api.Domain.Users;
 using Api.Infrastructure;
 using Api.Infrastructure.Authentication;
-using Api.Infrastructure.BackgroundJobs;
 using Api.Infrastructure.Caching;
 using Api.Infrastructure.Configuration;
 using Api.Infrastructure.Database;
