@@ -1,6 +1,6 @@
 services:
   api.web:
-    image: ${DOCKER_REGISTRY-}apiweb
+    image: ${DOCKER_REGISTRY-}Apiweb
     build:
       context: .
       dockerfile: Api.Web/Dockerfile
@@ -10,15 +10,15 @@ services:
       - ConnectionStrings__Database=Host=postgres;Port=5432;Database=ApiDb;Username=postgres;Password=postgres;
       - ConnectionStrings__Cache=redis:6379,abortConnect=false,ssl=false
     ports:
-      - "8080:8080"
-      - "8081:8081"
+      - '8080:8080'
+      - '8081:8081'
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: on-failure
-    
+
   postgres:
     image: postgres:15-alpine
     environment:
@@ -26,23 +26,23 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=ApiDb
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
-      
+
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -51,8 +51,8 @@ services:
     environment:
       - ACCEPT_EULA=Y
     ports:
-      - "5341:5341"
-      - "8880:80" 
+      - '5341:5341'
+      - '8880:80'
     volumes:
       - seq-data:/data
 
